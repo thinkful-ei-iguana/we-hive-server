@@ -1,0 +1,6 @@
+CREATE TABLE hive_groups
+(
+  id SERIAL PRIMARY KEY,
+  date_created TIMESTAMPTZ NOT NULL DEFAULT now(),
+  user_id INTEGER REFERENCES hive_users(id) ON DELETE CASCADE NOT NULL
+)
