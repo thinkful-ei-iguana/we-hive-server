@@ -32,7 +32,7 @@ function makeUsersArray() {
 
 function makeHiveFixtures() {
   const testUsers = makeUsersArray();
-  return { testUsers };
+  return testUsers;
 }
 
 function cleanTables(db) {
