@@ -5,6 +5,7 @@ const helmet = require("helmet");
 const cors = require("cors");
 const { NODE_ENV } = require("./config");
 const authRouter = require("./auth/auth-router");
+const goalsRouter = require("./goals/goals-router");
 const usersRouter = require("./users/users-router");
 
 const app = express();
@@ -16,10 +17,7 @@ app.use(helmet());
 app.use(cors());
 app.use("/api/auth", authRouter);
 app.use("/api/users", usersRouter);
-
-app.get("/", (req, res) => {
-  res.send("Hello, boilerplate!");
-});
+app.use("/api/goals", goalsRouter);
 
 app.use(function errorHandler(error, req, res, next) {
   let response;
