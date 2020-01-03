@@ -1,7 +1,8 @@
 const express = require("express");
+const path = require("path");
 const xss = require("xss");
 const GoalsService = require("./goals-service");
-const { requireAuth } = require("../middleware/jwt-auth");
+const requireAuth = require("../middleware/jwt-auth");
 
 const goalsRouter = express.Router();
 const jsonParser = express.json();
@@ -19,8 +20,9 @@ const serializeGoal = goal => ({
 
 goalsRouter
   .route("/")
+  .all(requireAuth)
   .get((req, res, next) => {
-    GoalsService.getAllGoals(req.app.get("db"))
+    GoalsService.getGoalsByUserId(req.app.get("db"), req.user.id)
       .then(goals => {
         res.json(goals.map(serializeGoal));
       })
@@ -32,16 +34,12 @@ goalsRouter
       goal_type,
       goal_description,
       target_date,
-      date_added,
-      user_id
+      date_added
     } = req.body;
     const newGoal = {
-      private,
       goal_type,
       goal_description,
-      target_date,
-      date_added,
-      user_id
+      target_date
     };
 
     for (const [key, value] of Object.entries(newGoal))
@@ -49,11 +47,16 @@ goalsRouter
         return res.status(400).json({
           error: { message: `Missing '${key}' in request body.` }
         });
+
+    newGoal.private = private;
+    newGoal.date_added = date_added;
+    newGoal.user_id = req.user.id;
+
     GoalsService.insertGoal(req.app.get("db"), newGoal)
       .then(goal => {
         res
           .status(201)
-          .location(`/goals/${goal.id}`)
+          .location(path.posix.join(req.originalUrl, `/${goal.id}`))
           .json(serializeGoal(goal));
       })
       .catch(next);
@@ -61,6 +64,7 @@ goalsRouter
 
 goalsRouter
   .route("/:goal_id")
+  .all(requireAuth)
   .all((req, res, next) => {
     GoalsService.getById(req.app.get("db"), req.params.goal_id)
       .then(goal => {

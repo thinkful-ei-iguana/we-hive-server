@@ -3,6 +3,22 @@ const bcrypt = require("bcryptjs");
 const REGEX_UPPER_LOWER_NUMBER_SPECIAL = /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&])[\S]+/;
 
 const UsersService = {
+  deleteUser(db, id) {
+    return db
+      .from("hive_users")
+      .where({ id })
+      .delete();
+  },
+  getAllUsers(db) {
+    return db.from("hive_users").select("*");
+  },
+  getById(db, id) {
+    return db
+      .from("hive_users")
+      .select("*")
+      .where({ id })
+      .first();
+  },
   hashPassword(password) {
     return bcrypt.hash(password, 12);
   },
@@ -19,6 +35,21 @@ const UsersService = {
       .returning("*")
       .then(([user]) => user);
   },
+  serializeUser(user) {
+    return {
+      id: user.id,
+      first_name: xss(user.first_name),
+      user_name: xss(user.user_name),
+      user_email: xss(user.user_email),
+      date_created: new Date(user.date_created)
+    };
+  },
+  updateUser(db, id, newUserFields) {
+    return db
+      .from("hive_users")
+      .where({ id })
+      .update(newUserFields);
+  },
   validatePassword(password) {
     if (password.length < 8) {
       return "Password must be longer than 8 characters";
@@ -33,15 +64,6 @@ const UsersService = {
       return "Password must contain 1 upper case, lower case, number and special character";
     }
     return null;
-  },
-  serializeUser(user) {
-    return {
-      id: user.id,
-      first_name: xss(user.first_name),
-      user_name: xss(user.user_name),
-      user_email: xss(user.user_email),
-      date_created: new Date(user.date_created)
-    };
   }
 };
 
