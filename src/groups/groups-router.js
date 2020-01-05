@@ -1,18 +1,11 @@
 const express = require("express");
 const path = require("path");
-const xss = require("xss");
+
 const GroupsService = require("./groups-service");
 const requireAuth = require("../middleware/jwt-auth");
 
 const groupsRouter = express.Router();
 const jsonParser = express.json();
-
-const serializeGroup = group => ({
-  id: group.id,
-  date_created: group.date_created,
-  user_id: group.user_id,
-  group_url: xss(group.group_url)
-});
 
 groupsRouter
   .route("/")
@@ -20,7 +13,7 @@ groupsRouter
   .get((req, res, next) => {
     GroupsService.getGroupsByUserId(req.app.get("db"), req.user.id)
       .then(goals => {
-        res.json(goals.map(serializeGroup));
+        res.json(goals.map(GroupsService.serializeGroup));
       })
       .catch(next);
   })
@@ -38,7 +31,7 @@ groupsRouter
         res
           .status(201)
           .location(path.posix.join(req.originalUrl, `/${group.id}`))
-          .json(serializeGroup(group));
+          .json(GroupsService.serializeGroup(group));
       })
       .catch(next);
   });
@@ -46,19 +39,7 @@ groupsRouter
 groupsRouter
   .route("/:group_id")
   .all(requireAuth)
-  .all((req, res, next) => {
-    GroupsService.getById(req.app.get("db"), req.params.group_id)
-      .then(group => {
-        if (!group) {
-          return res.status(404).json({
-            error: { message: "Group doesn't exist" }
-          });
-        }
-        res.group = group;
-        next();
-      })
-      .catch(next);
-  })
+  .all(checkGroupExists)
   .get((req, res) => {
     res.json(serializeGroup(res.group));
   })
@@ -92,5 +73,36 @@ groupsRouter
       })
       .catch(next);
   });
+
+groupsRouter
+  .route("/:group_id/hive-mind")
+  .all(requireAuth)
+  .all(checkGroupExists)
+  .get((req, res, next) => {
+    GroupsService.getActivityForGroup(req.app.get("db"), req.params.group_id)
+      .then(activity => {
+        res.json(GroupsService.serializeGroupActivity(activity));
+      })
+      .catch(next);
+  });
+/* async/await syntax for promises */
+async function checkGroupExists(req, res, next) {
+  try {
+    const group = await GroupsService.getById(
+      req.app.get("db"),
+      req.params.group_id
+    );
+
+    if (!group)
+      return res.status(404).json({
+        error: "Group doesn't exist"
+      });
+
+    res.group = group;
+    next();
+  } catch (error) {
+    next(error);
+  }
+}
 
 module.exports = groupsRouter;

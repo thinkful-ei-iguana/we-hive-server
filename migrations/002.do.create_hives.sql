@@ -4,7 +4,7 @@ CREATE TYPE goal AS ENUM
   'Event', 'Current Goal', 'Stretch Goal', 'Future Goal', 'Dream Goal', 'Completed Goal'
   );
 
-CREATE TABLE hive_goals
+CREATE TABLE hives
 (
   id SERIAL PRIMARY KEY,
   private BOOLEAN DEFAULT true,
@@ -13,6 +13,5 @@ CREATE TABLE hive_goals
   target_date DATE NOT NULL,
   group_message TEXT,
   date_added TIMESTAMPTZ NOT NULL DEFAULT now
-() NOT NULL,
-  user_id INTEGER REFERENCES hive_users(id) ON DELETE CASCADE
+() NOT NULL
 );

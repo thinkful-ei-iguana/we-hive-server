@@ -30,10 +30,10 @@ goalsRouter
   })
   .post(jsonParser, (req, res, next) => {
     const {
-      private,
       goal_type,
       goal_description,
       target_date,
+      group_message,
       date_added
     } = req.body;
     const newGoal = {
@@ -48,7 +48,7 @@ goalsRouter
           error: { message: `Missing '${key}' in request body.` }
         });
 
-    newGoal.private = private;
+    newGoal.group_message = group_message;
     newGoal.date_added = date_added;
     newGoal.user_id = req.user.id;
 
