@@ -5,16 +5,16 @@ const REGEX_UPPER_LOWER_NUMBER_SPECIAL = /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*
 const UsersService = {
   deleteUser(db, id) {
     return db
-      .from("hive_users")
+      .from("users")
       .where({ id })
       .delete();
   },
   getAllUsers(db) {
-    return db.from("hive_users").select("*");
+    return db.from("users").select("*");
   },
   getById(db, id) {
     return db
-      .from("hive_users")
+      .from("users")
       .select("*")
       .where({ id })
       .first();
@@ -23,7 +23,7 @@ const UsersService = {
     return bcrypt.hash(password, 12);
   },
   hasUserWithUserName(db, user_name) {
-    return db("hive_users")
+    return db("users")
       .where({ user_name })
       .first()
       .then(user => !!user);
@@ -31,7 +31,7 @@ const UsersService = {
   insertUser(db, newUser) {
     return db
       .insert(newUser)
-      .into("hive_users")
+      .into("users")
       .returning("*")
       .then(([user]) => user);
   },
@@ -46,7 +46,7 @@ const UsersService = {
   },
   updateUser(db, id, newUserFields) {
     return db
-      .from("hive_users")
+      .from("users")
       .where({ id })
       .update(newUserFields);
   },

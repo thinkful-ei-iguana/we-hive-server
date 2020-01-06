@@ -38,10 +38,8 @@ function makeHiveFixtures() {
 function cleanTables(db) {
   return db.transaction(trx =>
     trx
-      .raw(`TRUNCATE hive_users`)
-      .then(() =>
-        Promise.all([trx.raw(`SELECT setval('hive_users_id_seq', 1)`)])
-      )
+      .raw(`TRUNCATE users`)
+      .then(() => Promise.all([trx.raw(`SELECT setval('users_id_seq', 1)`)]))
   );
 }
 
@@ -51,12 +49,10 @@ function seedUsers(db, users) {
     password: bcrypt.hashSync(user.password, 1)
   }));
   return db
-    .into("hive_users")
+    .into("users")
     .insert(preppedUsers)
     .then(() =>
-      db.raw(`SELECT setval('hive_users_id_seq', ?)`, [
-        users[users.length - 1].id
-      ])
+      db.raw(`SELECT setval('users_id_seq', ?)`, [users[users.length - 1].id])
     );
 }
 
