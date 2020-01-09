@@ -28,13 +28,19 @@ const HivesService = {
         return rows[0];
       });
   },
-  insertHiveUser(db, hive_id, user_id, joinCode) {
+  insertHiveUser(db, user_id, code) {
     return db
-      .into("hives_users")
-      .insert({ hive_id: hive_id, user_id: user_id, code: joinCode })
-      .returning("*")
-      .then(rows => {
-        return rows[0];
+      .from("hives_users")
+      .select("hive_id")
+      .where({ code })
+      .returning("hive_id")
+      .then(res => {
+        console.log(res);
+        return db.into("hives_users").insert({
+          hive_id: res[0].hive_id,
+          user_id: user_id,
+          code
+        });
       });
   },
   insertHiveAndUserId(db, newHive, user_id) {
@@ -48,6 +54,15 @@ const HivesService = {
           .insert({ hive_id: res[0], user_id: user_id });
       });
   },
+  insertActivity(db, newActivity) {
+    return db
+      .into("hive_activity")
+      .insert(newActivity)
+      .returning("*")
+      .then(rows => {
+        return rows[0];
+      });
+  },
   getById(db, id) {
     return db
       .from("hives")
@@ -58,7 +73,7 @@ const HivesService = {
   getByCode(db, code) {
     return db
       .from("hives_users")
-      .select("*")
+      .select("hive_id")
       .where("code", code)
       .first();
   },
@@ -90,8 +105,17 @@ const HivesService = {
   getActivityForHive(db, hive_id) {
     return db
       .from("hive_activity")
-      .select("*")
-      .where({ hive_id });
+      .select(
+        "hive_activity.id",
+        "hive_activity.action",
+        "hive_activity.notes",
+        "hive_activity.date_added",
+        "hive_activity.hive_id",
+        "hive_activity.user_id",
+        "users.first_name"
+      )
+      .where("hive_id", hive_id)
+      .leftJoin("users", "hive_activity.user_id", "=", "users.id");
   },
   serializeHives(hives) {
     return hives.map(this.serializeHive);
@@ -111,14 +135,11 @@ const HivesService = {
     return {
       id: activity.id,
       action: xss(activity.action),
-      timer: xss(activity.timer),
-      rating: xss(activity.rating),
-      private: activity.private,
       notes: xss(activity.notes),
-      reminders: xss(activity.reminders),
       date_added: activity.date_added,
       hive_id: activity.hive_id,
-      user_id: activity.user_id
+      user_id: activity.user_id,
+      user: activity.first_name
     };
   },
   serializeHiveUser(hiveUser) {

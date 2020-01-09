@@ -1,4 +1,6 @@
-const HiveActsService = {
+const xss = require("xss");
+
+const ActsService = {
   getAllActivities(db) {
     return db.select("*").from("hive_activity");
   },
@@ -13,9 +15,8 @@ const HiveActsService = {
       .into("hive_activity")
       .insert(newActivity)
       .returning("*")
-      .then(rows => {
-        return rows[0];
-      });
+      .then(([activity]) => activity)
+      .then(activity => ActsService.getById(db, activity.id));
   },
   getById(db, id) {
     return db
@@ -35,7 +36,21 @@ const HiveActsService = {
       .from("hive_activity")
       .where({ id })
       .update(newActivityFields);
+  },
+  serializeAct(act) {
+    return {
+      id: act.id,
+      action: xss(act.action),
+      timer: act.timer,
+      rating: act.rating,
+      private: act.private,
+      notes: xss(act.notes),
+      reminders: xss(act.reminders),
+      date_added: act.date_created,
+      hive_id: act.hive_id,
+      user_id: act.user_id
+    };
   }
 };
 
-module.exports = HiveActsService;
+module.exports = ActsService;

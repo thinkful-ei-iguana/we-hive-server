@@ -4,9 +4,9 @@ const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
 const { NODE_ENV } = require("./config");
+
 const authRouter = require("./auth/auth-router");
-// const goalsRouter = require("./goals/goals-router");
-// const groupActivitiesRouter = require("./activity/hive-acts-router");
+const actsRouter = require("./activity/acts-router");
 const hivesRouter = require("./hives/hives-router");
 const usersRouter = require("./users/users-router");
 
@@ -19,9 +19,8 @@ app.use(helmet());
 app.use(cors());
 app.use("/api/auth", authRouter);
 app.use("/api/users", usersRouter);
-// app.use("/api/goals", goalsRouter);
 app.use("/api/hives", hivesRouter);
-// app.use("/api/hive-mind", groupActivitiesRouter);
+app.use("/api/activity", actsRouter);
 
 app.use(function errorHandler(error, req, res, next) {
   let response;

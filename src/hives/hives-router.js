@@ -49,7 +49,25 @@ hivesRouter
       })
       .catch(next);
   });
+hivesRouter
+  .route("/code")
+  .all(requireAuth)
+  // .all(checkCodeExists)
+  .post(jsonParser, (req, res, next) => {
+    const { code } = req.body;
 
+    for (const [key, value] of Object.entries(code))
+      if (!value)
+        return res.status(400).json({
+          error: { message: `Missing '${key}' in request body.` }
+        });
+
+    HivesService.insertHiveUser(req.app.get("db"), req.user.id, code)
+      .then(hiveUser => {
+        res.status(201).json(HivesService.serializeHiveUser(hiveUser));
+      })
+      .catch(next);
+  });
 hivesRouter
   .route("/:hive_id")
   .all(requireAuth)
@@ -98,7 +116,48 @@ hivesRouter
   });
 
 hivesRouter
-  .route("/:hive_id/add-members")
+  .route("/:hive_id")
+  .all(requireAuth)
+  .post(jsonParser, (req, res, next) => {
+    const {
+      action,
+      timer,
+      rating,
+      private,
+      notes,
+      reminders,
+      date_added
+    } = req.body;
+    const newActivity = {
+      action
+    };
+
+    for (const [key, value] of Object.entries(newActivity))
+      if (!value)
+        return res.status(400).json({
+          error: { message: `Missing '${key}' in request body.` }
+        });
+
+    newActivity.timer = timer;
+    newActivity.rating = rating;
+    newActivity.private = private;
+    newActivity.notes = notes;
+    newActivity.reminders = reminders;
+    newActivity.date_added = date_added;
+    newActivity.user_id = req.user.id;
+
+    HivesService.insertActivity(req.app.get("db"), newActivity)
+      .then(activity => {
+        res
+          .status(201)
+          .location(path.posix.join(req.originalUrl, `/${activity.id}`))
+          .json(HivesService.serializeAct(activity));
+      })
+      .catch(next);
+  });
+
+hivesRouter
+  .route("/:hive_id/code")
   .all(requireAuth)
   .all(checkHiveExists)
   .patch(jsonParser, (req, res, next) => {
@@ -122,34 +181,6 @@ hivesRouter
   });
 
 hivesRouter
-  .route("/:hive_id/join-hive")
-  .all(requireAuth)
-  .all(checkHiveExists)
-  .post(jsonParser, (req, res, next) => {
-    const { code } = req.body;
-    const joinCode = {
-      code
-    };
-
-    for (const [key, value] of Object.entries(joinCode))
-      if (!value)
-        return res.status(400).json({
-          error: { message: `Missing '${key}' in request body.` }
-        });
-
-    HivesService.insertHiveUser(
-      req.app.get("db"),
-      req.params.hive_id,
-      req.user.id,
-      code
-    )
-      .then(hiveUser => {
-        res.status(201).json(HivesService.serializeHiveUser(hiveUser));
-      })
-      .catch(next);
-  });
-
-hivesRouter
   .route("/:hive_id/members")
   .all(requireAuth)
   .all(checkHiveExists)
@@ -161,13 +192,13 @@ hivesRouter
       .catch(next);
   });
 hivesRouter
-  .route("/:hive_id/hive-mind")
+  .route("/:hive_id/activity")
   .all(requireAuth)
   .all(checkHiveExists)
   .get((req, res, next) => {
     HivesService.getActivityForHive(req.app.get("db"), req.params.hive_id)
-      .then(activity => {
-        res.json(HivesService.serializeHiveActivity(activity));
+      .then(act => {
+        res.json(act.map(HivesService.serializeHiveActivity));
       })
       .catch(next);
   });
@@ -190,14 +221,13 @@ async function checkHiveExists(req, res, next) {
     next(error);
   }
 }
-
 async function checkCodeExists(req, res, next) {
   try {
-    const code = await HivesService.getByCode(req.app.get("db"), req.code);
+    const code = await HivesService.getByCode(req.app.get("db"), req.body.code);
 
     if (!code)
       return res.status(404).json({
-        error: "Incorrect code"
+        error: "Incorrect password"
       });
 
     res.code = code;
