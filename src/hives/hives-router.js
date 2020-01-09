@@ -8,6 +8,17 @@ const hivesRouter = express.Router();
 const jsonParser = express.json();
 
 hivesRouter
+  .route("/user")
+  .all(requireAuth)
+  .get((req, res, next) => {
+    HivesService.getLoggedInUser(req.app.get("db"), req.user.id)
+      .then(user => {
+        res.json(HivesService.serializeUser(user));
+      })
+      .catch(next);
+  });
+
+hivesRouter
   .route("/")
   .all(requireAuth)
   .get((req, res, next) => {

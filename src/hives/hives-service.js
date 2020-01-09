@@ -4,7 +4,15 @@ const HivesService = {
   getAllHives(db) {
     return db.from("hives").select("*");
   },
-
+  getLoggedInUser(db, id) {
+    return db
+      .from("users")
+      .select("*")
+      .where({ id })
+      .then(rows => {
+        return rows[0];
+      });
+  },
   getHivesByUserId(db, user_id) {
     return db
       .from("hives")
@@ -35,7 +43,6 @@ const HivesService = {
       .where({ code })
       .returning("hive_id")
       .then(res => {
-        console.log(res);
         return db.into("hives_users").insert({
           hive_id: res[0].hive_id,
           user_id: user_id,
@@ -147,6 +154,12 @@ const HivesService = {
       hive_id: hiveUser.hive_id,
       user_id: hiveUser.user_id,
       code: hiveUser.code
+    };
+  },
+  serializeUser(user) {
+    return {
+      id: user.id,
+      first_name: user.first_name
     };
   }
 };
