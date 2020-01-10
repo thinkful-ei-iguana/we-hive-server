@@ -18,22 +18,22 @@ BEGIN;
   INSERT INTO hives
     (goal_type, goal_description, target_date, group_message)
   VALUES
-    ('Event', 'Plan mom''s 75th bday', '2013-11-28 23:09:11.761166+03', 'celebrate!'),
-    ('Current Goal', 'Run a marathon', '2013-11-28 23:09:11.761166+03', ''),
-    ('Stretch Goal', 'Run 100 miles in South Africa', '2013-11-28 23:09:11.761166+03', ''),
-    ('Future Goal', 'Write a novel', '2013-11-28 23:09:11.761166+03', 'Let''s reach 50,000 words together');
+    (1, 'Plan trip to Scotland', '2020-11-28 23:09:11.761166+03', 'Anyone up for the Scottish Games?'),
+    (2, 'Run a marathon', '2020-07-28 23:09:11.761166+03', ''),
+    (3, 'Run 100 miles in South Africa', '2021-11-28 23:09:11.761166+03', ''),
+    (4, 'Write a novel', '2020-11-30 23:09:11.761166+03', 'Let''s reach 50,000 words together for NaNoWrimo');
 
   INSERT INTO hives_users
     (
-    hive_id, user_id, code
+    hive_id, user_id
     )
   VALUES
-    (1, 1, 'mycode'),
-    (1, 2, 'mycode'),
-    (1, 3, 'mycode'),
-    (2, 1, 'mycode'),
-    (2, 4, 'mycode'),
-    (3, 1, '');
+    (1, 1),
+    (1, 2),
+    (1, 3),
+    (2, 1),
+    (2, 4),
+    (3, 1);
 
   INSERT INTO hive_activity
     (action, timer, rating, notes, reminders, hive_id, user_id)

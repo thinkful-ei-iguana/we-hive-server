@@ -45,8 +45,7 @@ const HivesService = {
       .then(res => {
         return db.into("hives_users").insert({
           hive_id: res[0].hive_id,
-          user_id: user_id,
-          code
+          user_id: user_id
         });
       });
   },
@@ -107,6 +106,7 @@ const HivesService = {
     return db
       .from("hives_users")
       .where("hive_id", hive_id)
+
       .update(code);
   },
   getActivityForHive(db, hive_id) {
@@ -152,8 +152,7 @@ const HivesService = {
   serializeHiveUser(hiveUser) {
     return {
       hive_id: hiveUser.hive_id,
-      user_id: hiveUser.user_id,
-      code: hiveUser.code
+      user_id: hiveUser.user_id
     };
   },
   serializeUser(user) {

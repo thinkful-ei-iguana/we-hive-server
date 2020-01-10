@@ -1,7 +1,7 @@
 const GoalsService = require("../src/goals/goals-service");
 const knex = require("knex");
 const app = require("../src/app");
-const helpers = require("./test-helpers");
+const helpers = require("../test/test-helpers");
 
 describe.skip(`Goals service object`, function() {
   let db;
