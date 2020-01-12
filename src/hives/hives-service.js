@@ -106,7 +106,7 @@ const HivesService = {
     return db
       .from("hives_users")
       .where("hive_id", hive_id)
-
+      .first()
       .update(code);
   },
   getActivityForHive(db, hive_id) {
