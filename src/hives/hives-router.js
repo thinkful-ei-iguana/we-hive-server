@@ -184,7 +184,12 @@ hivesRouter
           message: "Request body must contain 'code'"
         }
       });
-    HivesService.updateHiveUsers(req.app.get("db"), req.params.hive_id, addCode)
+    HivesService.updateHiveUsers(
+      req.app.get("db"),
+      req.params.hive_id,
+      req.user.id,
+      addCode
+    )
       .then(numRowsAffected => {
         res.status(204).end();
       })
@@ -234,7 +239,7 @@ async function checkHiveExists(req, res, next) {
 }
 async function checkCodeExists(req, res, next) {
   try {
-    const code = await HivesService.getByCode(req.app.get("db"), req.body.code);
+    const code = await HivesService.getByCode(req.app.get("db"), req.code);
 
     if (!code)
       return res.status(404).json({

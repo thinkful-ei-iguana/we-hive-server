@@ -83,6 +83,7 @@ const HivesService = {
       .where("code", code)
       .first();
   },
+  // need to add error message if no code found or incorrect code --> use below for middleware, then getByCode?
   getByIdFromJoin(db, hive_id) {
     return db
       .from("hives_users")
@@ -102,11 +103,11 @@ const HivesService = {
       .where({ id })
       .update(newHiveFields);
   },
-  updateHiveUsers(db, hive_id, code) {
+  updateHiveUsers(db, hive_id, user_id, code) {
     return db
       .from("hives_users")
       .where("hive_id", hive_id)
-      .first()
+      .where("user_id", user_id)
       .update(code);
   },
   getActivityForHive(db, hive_id) {
