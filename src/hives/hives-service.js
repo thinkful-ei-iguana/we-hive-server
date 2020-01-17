@@ -24,8 +24,7 @@ const HivesService = {
     return db
       .from("users")
       .select("*")
-      .join("hives_users", "users.id", "=", "hives_users.user_id")
-      .where({ hive_id });
+      .join("hives_users", "users.id", "=", "hives_users.user_id");
   },
   insertHive(db, newHive) {
     return db
