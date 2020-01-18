@@ -1,9 +1,6 @@
 const xss = require("xss");
 
 const HivesService = {
-  getAllHives(db) {
-    return db.from("hives").select("*");
-  },
   getLoggedInUser(db, id) {
     return db
       .from("users")
@@ -25,15 +22,6 @@ const HivesService = {
       .from("users")
       .select("*")
       .join("hives_users", "users.id", "=", "hives_users.user_id");
-  },
-  insertHive(db, newHive) {
-    return db
-      .insert(newHive)
-      .into("hives")
-      .returning("*")
-      .then(rows => {
-        return rows[0];
-      });
   },
   insertHiveUser(db, user_id, code) {
     return db
@@ -59,15 +47,6 @@ const HivesService = {
           .insert({ hive_id: res[0], user_id: user_id });
       });
   },
-  insertActivity(db, newActivity) {
-    return db
-      .into("hive_activity")
-      .insert(newActivity)
-      .returning("*")
-      .then(rows => {
-        return rows[0];
-      });
-  },
   getById(db, id) {
     return db
       .from("hives")
@@ -81,26 +60,6 @@ const HivesService = {
       .select("hive_id")
       .where("code", code)
       .first();
-  },
-  // need to add error message if no code found or incorrect code --> use below for middleware, then getByCode?
-  getByIdFromJoin(db, hive_id) {
-    return db
-      .from("hives_users")
-      .select("*")
-      .where("hive_id", hive_id)
-      .first();
-  },
-  deleteHive(db, id) {
-    return db
-      .from("hives")
-      .where({ id })
-      .delete();
-  },
-  updateHive(db, id, newHiveFields) {
-    return db
-      .from("hives")
-      .where({ id })
-      .update(newHiveFields);
   },
   updateHiveUsers(db, hive_id, user_id, code) {
     return db
@@ -130,7 +89,6 @@ const HivesService = {
   serializeHive(hive) {
     return {
       id: hive.id,
-      private: hive.private,
       goal_type: hive.goal_type,
       goal_description: xss(hive.goal_description),
       target_date: xss(hive.target_date),

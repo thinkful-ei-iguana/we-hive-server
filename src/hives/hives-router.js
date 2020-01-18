@@ -63,7 +63,6 @@ hivesRouter
 hivesRouter
   .route("/code")
   .all(requireAuth)
-  // .all(checkCodeExists)
   .post(jsonParser, (req, res, next) => {
     const { code } = req.body;
 
@@ -85,86 +84,6 @@ hivesRouter
   .all(checkHiveExists)
   .get((req, res) => {
     res.json(HivesService.serializeHive(res.hive));
-  })
-  .delete((req, res, next) => {
-    HivesService.deleteHive(req.app.get("db"), req.params.hive_id)
-      .then(numRowsAffected => {
-        res.status(204).end();
-      })
-      .catch(next);
-  })
-  .patch(jsonParser, (req, res, next) => {
-    const {
-      goal_type,
-      goal_description,
-      target_date,
-      group_message
-    } = req.body;
-    const newHiveFields = {
-      goal_type,
-      goal_description,
-      target_date,
-      group_message
-    };
-
-    const numberOfValues = Object.values(newHiveFields).filter(Boolean).length;
-    if (numberOfValues === 0)
-      return res.status(400).json({
-        error: {
-          message:
-            "Request body must contain 'goal_type', 'goal_description','target_date', or 'group_message'"
-        }
-      });
-    HivesService.updateHive(
-      req.app.get("db"),
-      req.params.hive_id,
-      newHiveFields
-    )
-      .then(numRowsAffected => {
-        res.status(204).end();
-      })
-      .catch(next);
-  });
-
-hivesRouter
-  .route("/:hive_id")
-  .all(requireAuth)
-  .post(jsonParser, (req, res, next) => {
-    const {
-      action,
-      timer,
-      rating,
-      private,
-      notes,
-      reminders,
-      date_added
-    } = req.body;
-    const newActivity = {
-      action
-    };
-
-    for (const [key, value] of Object.entries(newActivity))
-      if (!value)
-        return res.status(400).json({
-          error: { message: `Missing '${key}' in request body.` }
-        });
-
-    newActivity.timer = timer;
-    newActivity.rating = rating;
-    newActivity.private = private;
-    newActivity.notes = notes;
-    newActivity.reminders = reminders;
-    newActivity.date_added = date_added;
-    newActivity.user_id = req.user.id;
-
-    HivesService.insertActivity(req.app.get("db"), newActivity)
-      .then(activity => {
-        res
-          .status(201)
-          .location(path.posix.join(req.originalUrl, `/${activity.id}`))
-          .json(HivesService.serializeAct(activity));
-      })
-      .catch(next);
   });
 
 hivesRouter

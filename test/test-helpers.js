@@ -37,72 +37,90 @@ function makeHivesArray() {
       goal_type: 3,
       goal_description: "run a marathon",
       target_date: "2020-01-01T12:30:30.615Z",
-      group_message: "let's run together"
+      group_message: "let's run together",
+      date_added: "2020-01-01T12:30:30.615Z"
     },
     {
       id: 2,
       goal_type: 2,
       goal_description: "run 1 mile",
       target_date: "2020-01-01T12:30:30.615Z",
-      group_message: "let's run together"
+      group_message: "let's run together",
+      date_added: "2020-01-01T12:30:30.615Z"
     },
     {
       id: 3,
       goal_type: 1,
       goal_description: "Scotland trip",
       target_date: "2020-01-01T12:30:30.615Z",
-      group_message: ""
+      group_message: "",
+      date_added: "2020-01-01T12:30:30.615Z"
     }
   ];
 }
 
-function makeHivesUsersArray(users, hives) {
+function makeHivesUsersArray() {
   return [
     {
-      hive_id: hives[0].id,
-      user_id: users[0].id
+      hive_id: 1,
+      user_id: 1
     },
     {
-      hive_id: hives[0].id,
-      user_id: users[1].id
+      hive_id: 1,
+      user_id: 2
     },
     {
-      hive_id: hives[0].id,
-      user_id: users[2].id
+      hive_id: 2,
+      user_id: 1
     },
     {
-      hive_id: hives[1].id,
-      user_id: users[0].id
+      hive_id: 2,
+      user_id: 2
     }
   ];
 }
 
-function makeActivityArray(hives, users) {
+function makeActivityArray() {
   return [
     {
       action: "action for hive 1",
       notes: "comment for hive 1",
-      hive_id: hives[0].id,
-      user_id: users[0].id
+      hive_id: 1,
+      user_id: 1
     },
     {
       action: "another action for hive 1",
       notes: "another comment for hive 1",
-      hive_id: hives[0].id,
-      user_id: users[1].id
+      hive_id: 1,
+      user_id: 2
     },
     {
       action: "third action for hive 1",
       notes: "third comment for hive 1",
-      hive_id: hives[0].id,
-      user_id: users[2].id
+      hive_id: 1,
+      user_id: 3
     }
   ];
 }
 
-// function makeExpectedHivesUsers(users, hive) {
-//   const user = users.find(user => user.id);
-// }
+function makeExpectedHive(hive) {
+  return {
+    id: hive.id,
+    goal_type: hive.goal_type,
+    goal_description: hive.goal_description,
+    target_date: hive.target_date,
+    group_message: hive.group_message,
+    date_added: hive.date_added
+  };
+}
+
+function makeExpectedJoinHive(user, hive) {
+  return {
+    hive_id: hive.id,
+    user_id: user.id
+  };
+}
+
 function cleanTables(db) {
   return db.transaction(trx =>
     trx
@@ -122,33 +140,39 @@ function seedUsers(db, users) {
     ...user,
     password: bcrypt.hashSync(user.password, 1)
   }));
-  return db
-    .into("users")
-    .insert(preppedUsers)
-    .then(() =>
-      db.raw(`SELECT setval('users_id_seq', ?)`, [users[users.length - 1].id])
-    );
+  return db.into("users").insert(preppedUsers);
 }
 
-function seedHivesTables(db, users, hives, hivesUsers, activity = []) {
+function seedHives(db, hives) {
+  const preppedHives = hives.map(hive => ({
+    ...hive
+  }));
+  return db.into("hives").insert(preppedHives);
+}
+
+function seedHivesUsersJoinTable(db, joins) {
+  const joinedUsers = joins.map(join => ({
+    ...join
+  }));
+  return db.into("hives_users").insert(joinedUsers);
+}
+
+function seedHivesTables(db, users, hives, activity = []) {
   //use a transaction to group the queries and auto rollback on any failure
   return db.transaction(async trx => {
     await seedUsers(trx, users);
-    await trx.into("hives").insert(hives);
-    await trx.into("hives_users").insert(hivesUsers);
+    await seedHives(trx, hives);
+    await trx.into("hives_users").insert(users[0].id, hives[0].id);
 
     if (activity.length) {
       await trx.into("hive_activity").insert(activity);
-      await trx.raw(`SELECT setval('hive_activity_id_seq', ?)`, [
-        activity[activity.length - 1].id
-      ]);
     }
   });
 }
 
 function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
   const token = jwt.sign({ user_id: user.id }, secret, {
-    subject: user.user_name,
+    subject: user.user_email,
     algorithm: "HS256"
   });
   return `Bearer ${token}`;
@@ -158,9 +182,12 @@ module.exports = {
   makeHivesArray,
   makeHivesUsersArray,
   makeActivityArray,
+  makeExpectedHive,
   makeUsersArray,
   cleanTables,
   seedUsers,
   seedHivesTables,
+  seedHivesUsersJoinTable,
+  makeExpectedJoinHive,
   makeAuthHeader
 };
