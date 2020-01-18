@@ -13,7 +13,7 @@ describe("Users Endpoints", function() {
   before("make knex instance", () => {
     db = knex({
       client: "pg",
-      connection: process.env.TEST_DB_URL
+      connection: process.env.TEST_DATABASE_URL
     });
     app.set("db", db);
   });
@@ -55,7 +55,7 @@ describe("Users Endpoints", function() {
         });
       });
 
-      it(`responds 400 'Password must be longer than 8 characters' when empty password`, () => {
+      it(`responds 400 'Password must be longer than 8 characters, and must contain 1 upper case, lower case, number and special character`, () => {
         const userShortPassword = {
           first_name: "test first_name",
           user_name: "test user_name",
@@ -65,7 +65,9 @@ describe("Users Endpoints", function() {
         return supertest(app)
           .post("/api/users")
           .send(userShortPassword)
-          .expect(400, { error: `Password must be longer than 8 characters` });
+          .expect(400, {
+            error: `Password must be longer than 8 characters, and must contain 1 upper case, lower case, number and special character`
+          });
       });
 
       it(`responds 400 'Password must be less than 72 characters' when long password`, () => {
@@ -122,7 +124,7 @@ describe("Users Endpoints", function() {
           .post("/api/users")
           .send(userPasswordNotComplex)
           .expect(400, {
-            error: `Password must contain 1 upper case, lower case, number and special character`
+            error: `Password must be longer than 8 characters, and must contain 1 upper case, lower case, number and special character`
           });
       });
 

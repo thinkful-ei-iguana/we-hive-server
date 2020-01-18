@@ -4,4 +4,4 @@ CREATE TABLE hives_users
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   code TEXT UNIQUE,
   PRIMARY KEY (hive_id, user_id)
-)
+);
