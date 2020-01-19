@@ -8,10 +8,10 @@ Users can use my app to create accountability groups amongst their peers where t
 
 Users who wish to create a "hive" can register for an account and add their goals according to its type. e.g. "Current goal" or "Dream goal". The main purpose of the app is to connect users with each other, so the hive creator adds a passcode to the hive and shares it with interested parties. Those users wishing to join that hive will need to create an account and use the passcode to be allowed entry to the hive. There, all users can log activity and comment on the group's progress in the "Hive Mind."
 
-![Landing Page](README\wehivelanding.gif "Landing Page")
-![User Dashboard](README\dashboard.png "User Dashboard")
-![Log Activity](README\activitylogger.png "Log Activity")
-![Hive Mind](README\hivemind.png "Hive Mind")
+![Landing Page](README/wehivelanding.gif "Landing Page")
+![User Dashboard](README/dashboard.png "User Dashboard")
+![Log Activity](README/activitylogger.png "Log Activity")
+![Hive Mind](README/hivemind.png "Hive Mind")
 
 ## See it live!
 
