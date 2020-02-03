@@ -25,6 +25,7 @@ describe("Users Endpoints", function() {
   afterEach("clean tables", () => helpers.cleanTables(db));
 
   describe(`POST /api/users`, () => {
+    this.retries(3);
     context(`User Validation`, () => {
       beforeEach("insert users", () => helpers.seedUsers(db, testUsers));
 
@@ -143,6 +144,7 @@ describe("Users Endpoints", function() {
     });
     context(`Happy path`, () => {
       it(`responds 201, serialized user, storing bcrypted password`, () => {
+        this.retries(3);
         const newUser = {
           first_name: "test first_name",
           user_name: "test user_name",
@@ -166,7 +168,7 @@ describe("Users Endpoints", function() {
           })
           .expect(res =>
             db
-              .from("hive_users")
+              .from("users")
               .select("*")
               .where({ id: res.body.id })
               .first()

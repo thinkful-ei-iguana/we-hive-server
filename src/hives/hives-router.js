@@ -8,17 +8,6 @@ const hivesRouter = express.Router();
 const jsonParser = express.json();
 
 hivesRouter
-  .route("/user")
-  .all(requireAuth)
-  .get((req, res, next) => {
-    HivesService.getLoggedInUser(req.app.get("db"), req.user.id)
-      .then(user => {
-        res.json(HivesService.serializeUser(user));
-      })
-      .catch(next);
-  });
-
-hivesRouter
   .route("/")
   .all(requireAuth)
   .get((req, res, next) => {
@@ -55,11 +44,12 @@ hivesRouter
       .then(hive => {
         res
           .status(201)
-          .location(path.posix.join(req.originalUrl, `/${hive.id}`))
-          .json(HivesService.serializeHive(hive));
+          .location(path.posix.join(req.originalUrl, `/${req.body.id}`))
+          .json(req.body);
       })
       .catch(next);
   });
+
 hivesRouter
   .route("/code")
   .all(requireAuth)
@@ -78,6 +68,18 @@ hivesRouter
       })
       .catch(next);
   });
+
+hivesRouter
+  .route("/user")
+  .all(requireAuth)
+  .get((req, res, next) => {
+    HivesService.getLoggedInUser(req.app.get("db"), req.user.id)
+      .then(user => {
+        res.json(HivesService.serializeUser(user));
+      })
+      .catch(next);
+  });
+
 hivesRouter
   .route("/:hive_id")
   .all(requireAuth)
@@ -137,7 +139,7 @@ hivesRouter
       })
       .catch(next);
   });
-/* async/await syntax for promises */
+
 async function checkHiveExists(req, res, next) {
   try {
     const hive = await HivesService.getById(
@@ -151,21 +153,6 @@ async function checkHiveExists(req, res, next) {
       });
 
     res.hive = hive;
-    next();
-  } catch (error) {
-    next(error);
-  }
-}
-async function checkCodeExists(req, res, next) {
-  try {
-    const code = await HivesService.getByCode(req.app.get("db"), req.code);
-
-    if (!code)
-      return res.status(404).json({
-        error: "Incorrect password"
-      });
-
-    res.code = code;
     next();
   } catch (error) {
     next(error);

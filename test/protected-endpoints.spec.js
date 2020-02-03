@@ -5,9 +5,12 @@ const helpers = require("./test-helpers");
 describe("Protected Endpoints", function() {
   let db;
 
-  const testUsers = helpers.makeUsersArray();
-  const testHives = helpers.makeHivesArray();
-  const testActivity = helpers.makeActivityArray();
+  const {
+    testUsers,
+    testHives,
+    testJoinHives,
+    testActivity
+  } = helpers.makeHivesFixtures();
 
   before("make knex instance", () => {
     db = knex({
@@ -24,7 +27,13 @@ describe("Protected Endpoints", function() {
   afterEach("clean tables", () => helpers.cleanTables(db));
 
   beforeEach("insert hives", () =>
-    helpers.seedHivesTables(db, testUsers, testHives, testActivity)
+    helpers.seedHivesTables(
+      db,
+      testUsers,
+      testHives,
+      testJoinHives,
+      testActivity
+    )
   );
 
   const protectedEndpoints = [

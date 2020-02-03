@@ -1,7 +1,7 @@
 CREATE TABLE hives_users
 (
+  id SERIAL PRIMARY KEY,
   hive_id INTEGER REFERENCES hives(id) ON DELETE CASCADE,
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-  code TEXT UNIQUE,
-  PRIMARY KEY (hive_id, user_id)
+  code TEXT UNIQUE
 );

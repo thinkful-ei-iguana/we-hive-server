@@ -54,13 +54,7 @@ const HivesService = {
       .where("id", id)
       .first();
   },
-  getByCode(db, code) {
-    return db
-      .from("hives_users")
-      .select("hive_id")
-      .where("code", code)
-      .first();
-  },
+
   updateHiveUsers(db, hive_id, user_id, code) {
     return db
       .from("hives_users")
@@ -90,9 +84,9 @@ const HivesService = {
     return {
       id: hive.id,
       goal_type: hive.goal_type,
-      goal_description: xss(hive.goal_description),
-      target_date: xss(hive.target_date),
-      group_message: xss(hive.group_message),
+      goal_description: hive.goal_description,
+      target_date: hive.target_date,
+      group_message: hive.group_message,
       date_added: hive.date_added
     };
   },
@@ -116,7 +110,8 @@ const HivesService = {
   serializeUser(user) {
     return {
       id: user.id,
-      first_name: user.first_name
+      first_name: user.first_name,
+      user_email: user.user_email
     };
   }
 };

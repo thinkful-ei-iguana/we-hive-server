@@ -1,3 +1,4 @@
+/* eslint-disable quotes */
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -35,23 +36,23 @@ function makeHivesArray() {
     {
       id: 1,
       goal_type: 3,
-      goal_description: "run a marathon",
+      goal_description: "Goal 1 desc for type 3",
       target_date: "2020-01-01T12:30:30.615Z",
-      group_message: "let's run together",
+      group_message: "Goal 1 group message",
       date_added: "2020-01-01T12:30:30.615Z"
     },
     {
       id: 2,
       goal_type: 2,
-      goal_description: "run 1 mile",
+      goal_description: "Goal 2 desc for type 2",
       target_date: "2020-01-01T12:30:30.615Z",
-      group_message: "let's run together",
+      group_message: "Goal 2 group message",
       date_added: "2020-01-01T12:30:30.615Z"
     },
     {
       id: 3,
       goal_type: 1,
-      goal_description: "Scotland trip",
+      goal_description: "Goal 3 desc for type 1",
       target_date: "2020-01-01T12:30:30.615Z",
       group_message: "",
       date_added: "2020-01-01T12:30:30.615Z"
@@ -62,20 +63,30 @@ function makeHivesArray() {
 function makeHivesUsersArray() {
   return [
     {
+      id: 1,
       hive_id: 1,
       user_id: 1
     },
     {
+      id: 2,
       hive_id: 1,
       user_id: 2
     },
     {
-      hive_id: 2,
+      id: 3,
+      hive_id: 3,
       user_id: 1
     },
     {
+      id: 4,
       hive_id: 2,
       user_id: 2
+    },
+    {
+      id: 5,
+      hive_id: 2,
+      user_id: 2,
+      code: "testpass"
     }
   ];
 }
@@ -83,22 +94,36 @@ function makeHivesUsersArray() {
 function makeActivityArray() {
   return [
     {
+      id: 1,
       action: "action for hive 1",
       notes: "comment for hive 1",
+      date_added: "2020-01-01T12:30:30.615Z",
       hive_id: 1,
       user_id: 1
     },
     {
+      id: 2,
       action: "another action for hive 1",
       notes: "another comment for hive 1",
+      date_added: "2020-01-01T12:30:30.615Z",
       hive_id: 1,
       user_id: 2
     },
     {
+      id: 3,
       action: "third action for hive 1",
       notes: "third comment for hive 1",
+      date_added: "2020-01-01T12:30:30.615Z",
       hive_id: 1,
       user_id: 3
+    },
+    {
+      id: 4,
+      action: "first action for hive 2",
+      notes: "first comment for hive 2",
+      date_added: "2020-01-01T12:30:30.615Z",
+      hive_id: 2,
+      user_id: 1
     }
   ];
 }
@@ -116,22 +141,42 @@ function makeExpectedHive(hive) {
 
 function makeExpectedJoinHive(user, hive) {
   return {
+    id: 1,
     hive_id: hive.id,
     user_id: user.id
   };
 }
 
+function makeExpectedActivity(users, hivesUser, activity = []) {
+  const user = users.find(user => user.id === hivesUser.user_id);
+  const activityList = activity.filter(
+    act => act.hive_id === hivesUser.hive_id
+  );
+
+  return {
+    id: activity.id,
+    action: activity.action,
+    notes: activity.notes,
+    date_added: activity.date_added,
+    hive_id: activity.hive_id,
+    user_id: activity.user_id,
+    user: user.first_name
+  };
+}
+
+function makeHivesFixtures() {
+  const testUsers = makeUsersArray();
+  const testHives = makeHivesArray();
+  const testJoinHives = makeHivesUsersArray();
+  const testActivity = makeActivityArray();
+  return { testUsers, testHives, testJoinHives, testActivity };
+}
+
 function cleanTables(db) {
   return db.transaction(trx =>
-    trx
-      .raw(`TRUNCATE hive_activity, hives_users, hives, users`)
-      .then(() =>
-        Promise.all([
-          trx.raw(`SELECT setval('hive_activity_id_seq', 1)`),
-          trx.raw(`SELECT setval('hives_id_seq', 1)`),
-          trx.raw(`SELECT setval('users_id_seq', 1)`)
-        ])
-      )
+    trx.raw(
+      `TRUNCATE hive_activity, hives_users, hives, users RESTART IDENTITY CASCADE`
+    )
   );
 }
 
@@ -140,32 +185,50 @@ function seedUsers(db, users) {
     ...user,
     password: bcrypt.hashSync(user.password, 1)
   }));
-  return db.into("users").insert(preppedUsers);
+
+  return db
+    .into("users")
+    .insert(preppedUsers)
+    .then(() =>
+      db.raw(`SELECT setval('users_id_seq', ?)`, [users[users.length - 1].id])
+    );
 }
 
 function seedHives(db, hives) {
-  const preppedHives = hives.map(hive => ({
-    ...hive
-  }));
-  return db.into("hives").insert(preppedHives);
+  return db
+    .into("hives")
+    .insert(hives)
+    .then(() =>
+      db.raw(`SELECT setval('hives_id_seq', ?)`, [hives[hives.length - 1].id])
+    );
 }
 
-function seedHivesUsersJoinTable(db, joins) {
-  const joinedUsers = joins.map(join => ({
-    ...join
-  }));
-  return db.into("hives_users").insert(joinedUsers);
+function seedHivesUsers(db, hives_users) {
+  return db
+    .into("hives_users")
+    .insert(hives_users)
+    .then(() =>
+      db.raw(`SELECT setval('hives_users_id_seq', ?)`, [
+        hives_users[hives_users.length - 1].id
+      ])
+    );
 }
-
-function seedHivesTables(db, users, hives, activity = []) {
+function seedHivesTables(db, users, hives, hives_users, activity = []) {
   //use a transaction to group the queries and auto rollback on any failure
   return db.transaction(async trx => {
-    await seedUsers(trx, users);
-    await seedHives(trx, hives);
-    await trx.into("hives_users").insert(users[0].id, hives[0].id);
+    seedUsers(trx, users);
+    seedHives(trx, hives);
+    seedHivesUsers(trx, hives_users);
+
+    trx.raw(`SELECT setval('hives_users_id_seq', ?)`, [
+      hives_users[hives_users.length - 1].id
+    ]);
 
     if (activity.length) {
       await trx.into("hive_activity").insert(activity);
+      await trx.raw(`SELECT setval('hive_activity_id_seq', ?)`, [
+        activity[activity.length - 1].id
+      ]);
     }
   });
 }
@@ -178,16 +241,24 @@ function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
   return `Bearer ${token}`;
 }
 
+function makeHashPassword(password) {
+  return bcrypt.hash(password, 12);
+}
+
 module.exports = {
+  makeUsersArray,
   makeHivesArray,
   makeHivesUsersArray,
   makeActivityArray,
   makeExpectedHive,
-  makeUsersArray,
+  makeExpectedJoinHive,
+  makeExpectedActivity,
+  makeHivesFixtures,
   cleanTables,
   seedUsers,
+  seedHives,
   seedHivesTables,
-  seedHivesUsersJoinTable,
-  makeExpectedJoinHive,
-  makeAuthHeader
+  seedHivesUsers,
+  makeAuthHeader,
+  makeHashPassword
 };

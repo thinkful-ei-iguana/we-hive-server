@@ -15,6 +15,7 @@ authRouter.post("/login", jsonBodyParser, (req, res, next) => {
       });
     }
   AuthService.getUserWithUserEmail(req.app.get("db"), loginUser.user_email)
+
     .then(dbUser => {
       if (!dbUser) {
         return res.status(400).json({
@@ -25,12 +26,14 @@ authRouter.post("/login", jsonBodyParser, (req, res, next) => {
         loginUser.password,
         dbUser.password
       ).then(compareMatch => {
-        if (!compareMatch)
+        if (!compareMatch) {
           return res.status(400).json({
             error: "Incorrect user email or password"
           });
+        }
         const sub = dbUser.user_email;
         const payload = { user_id: dbUser.id };
+
         res.send({
           authToken: AuthService.createJwt(sub, payload)
         });
