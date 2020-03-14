@@ -11,7 +11,7 @@ BEGIN;
     (user_name, first_name, user_email, password)
   VALUES
     ('wendybee1', 'Wendy', 'web@gmail.com', '$2a$12$8zTUtyLYgtn4hjqnKZ.isepUhdgxYhRRBGANpeTsEJLPTZFNLIw1.'),
-    ('GottaRitaPita', 'Rita', 'rita@gmail.com', '$2a$12$8zTUtyLYgtn4hjqnKZ.isepUhdgxYhRRBGANpeTsEJLPTZFNLIw1.'),
+    ('IAmADemo', 'Demo', 'demo@me.com', '$2a$12$8zTUtyLYgtn4hjqnKZ.isepUhdgxYhRRBGANpeTsEJLPTZFNLIw1.'),
     ('AmyAmie', 'Amy', 'amy@gmail.com', '$2a$12$8zTUtyLYgtn4hjqnKZ.isepUhdgxYhRRBGANpeTsEJLPTZFNLIw1.'),
     ('Raf', 'Rafe', 'rafe@gmail.com', '$2a$12$8zTUtyLYgtn4hjqnKZ.isepUhdgxYhRRBGANpeTsEJLPTZFNLIw1.');
 

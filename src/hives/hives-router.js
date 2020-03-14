@@ -53,6 +53,7 @@ hivesRouter
 hivesRouter
   .route("/code")
   .all(requireAuth)
+
   .post(jsonParser, (req, res, next) => {
     const { code } = req.body;
 
@@ -63,6 +64,7 @@ hivesRouter
         });
 
     HivesService.insertHiveUser(req.app.get("db"), req.user.id, code)
+
       .then(hiveUser => {
         res.status(201).json(HivesService.serializeHiveUser(hiveUser));
       })

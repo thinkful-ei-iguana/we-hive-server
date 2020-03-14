@@ -13,7 +13,14 @@ const HivesService = {
   getHivesByUserId(db, user_id) {
     return db
       .from("hives")
-      .select("*")
+      .select(
+        "hives.id",
+        "goal_type",
+        "goal_description",
+        "target_date",
+        "group_message",
+        "date_added"
+      )
       .join("hives_users", "hives.id", "=", "hives_users.hive_id")
       .where({ user_id });
   },
@@ -52,6 +59,13 @@ const HivesService = {
       .from("hives")
       .select("*")
       .where("id", id)
+      .first();
+  },
+  getHiveIdByCode(db, code) {
+    return db
+      .from("hives_users")
+      .select("hive_id", "user_id")
+      .where("code", code)
       .first();
   },
 
