@@ -25,7 +25,8 @@ app.use('/api/activity', actsRouter);
 app.use(function errorHandler(error, req, res, next) {
   let response;
   if (NODE_ENV === 'production') {
-    response = { error: { message: 'server error, please fix environment' } };
+    // response = { error: { message: 'server error, please fix environment' } };
+    response = { message: error.message, error };
   } else {
     response = { message: error.message, error };
   }
